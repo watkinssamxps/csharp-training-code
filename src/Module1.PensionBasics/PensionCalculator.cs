@@ -11,11 +11,13 @@ public class PensionCalculator
     /// </summary>
     public decimal CalculateAnnualPension(decimal salary, int serviceYears, decimal accrualRate)
     {
+        return salary * serviceYears * accrualRate;
+    }
         // TODO: Implement the pension calculation formula
         // Hint: Simply multiply the three values together
         //some comment
-        //throw new NotImplementedException("Exercise 1: Implement CalculateAnnualPension");
-    }
+        
+        
 
     // Exercise 2: Get the accrual rate from the enum
     // Sixtieths → 1/60 = 0.016666...
@@ -28,7 +30,16 @@ public class PensionCalculator
     {
         // TODO: Use an if/else or switch to return the correct rate
         // Hint: 1m/60m gives you a decimal result (the 'm' suffix means decimal literal)
-        throw new NotImplementedException("Exercise 2: Implement GetAccrualRate");
+        //throw new NotImplementedException("Exercise 2: Implement GetAccrualRate");
+         switch (basis)
+        {
+            case AccrualBasis.Sixtieths:
+                return 1m / 60m;
+            case AccrualBasis.Eightieths:
+                return 1m / 80m;
+            default:
+                throw new ArgumentException("Invalid accrual basis");
+        }
     }
 
     // Exercise 3: Handle part-time service
@@ -42,7 +53,8 @@ public class PensionCalculator
     {
         // TODO: Implement the part-time pension calculation
         // Hint: It's the same as Exercise 1 but multiplied by the part-time proportion
-        throw new NotImplementedException("Exercise 3: Implement CalculatePartTimePension");
+        //throw new NotImplementedException("Exercise 3: Implement CalculatePartTimePension");
+        return salary * serviceYears * accrualRate * partTimeProportion;
     }
 
     // Exercise 4: Early retirement reduction
@@ -61,6 +73,14 @@ public class PensionCalculator
         // Hint: If retiring at or after NPA, return the full pension
         // Hint: yearsEarly = normalPensionAge - retirementAge
         // Hint: reducedPension = annualPension * (1 - yearsEarly * reductionPerYear)
-        throw new NotImplementedException("Exercise 4: Implement ApplyEarlyRetirementReduction");
+        //throw new NotImplementedException("Exercise 4: Implement ApplyEarlyRetirementReduction");
+        if (retirementAge >= normalPensionAge)
+        {
+            return annualPension;
+        }
+        int yearsEarly = normalPensionAge - retirementAge;
+        decimal totalReduction = yearsEarly * reductionPerYear;
+        decimal reducedPension = annualPension * (1 - totalReduction);
+        return reducedPension;
     }
 }
