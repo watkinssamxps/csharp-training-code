@@ -34,7 +34,23 @@ public class CommutationCalculator
         //   lumpSum = commutedPension × commutationFactor (from factor table)
         //   residualPension = annualPension - commutedPension
         // Return a new CommutationResult
-        throw new NotImplementedException("Exercise 4: Implement Commute");
+        // throw new NotImplementedException("Exercise 4: Implement Commute");
+
+        // Calculate the commuted pension
+        var commutedPension = annualPension * commutationPercentage;
+        var commutationFactor = _factorTable.GetFactor(age, "Commutation");
+        
+        var lumpSum = commutedPension * commutationFactor;
+        
+        var residualPension = annualPension - commutedPension;
+
+        // Return the result as a CommutationResult object
+        return new CommutationResult
+        {
+            ResidualPension = residualPension,
+            LumpSum = lumpSum,
+            CommutedPension = commutedPension
+        };
     }
 }
 

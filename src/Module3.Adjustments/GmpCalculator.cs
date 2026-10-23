@@ -22,7 +22,17 @@ public class GmpCalculator
         // TODO: Calculate excess and return a GmpSplit
         // Hint: excess = totalPension - pre88Gmp - post88Gmp
         // Handle case where total < GMP amounts (excess should be 0, not negative)
-        throw new NotImplementedException("Exercise 5: Implement SplitPension");
+        //throw new NotImplementedException("Exercise 5: Implement SplitPension");
+
+        var excess = Math.Max(0m, totalPension - pre88Gmp - post88Gmp);
+        
+        return new GmpSplit
+        {
+            Pre88Gmp = pre88Gmp,
+            Post88Gmp = post88Gmp,
+            Excess = excess
+        };
+
     }
 
     // Exercise 6: Get the revaluation rate using a switch expression
@@ -40,7 +50,15 @@ public class GmpCalculator
         //     RevaluationType.CpiCapped => ...,
         //     _ => throw new ArgumentException(...)
         // };
-        throw new NotImplementedException("Exercise 6: Implement GetRevaluationRate");
+        //throw new NotImplementedException("Exercise 6: Implement GetRevaluationRate");
+
+        return revalType switch
+        {
+            RevaluationType.Fixed => 0.035m,
+            RevaluationType.Section52 => 0.04m,
+            RevaluationType.CpiCapped => Math.Min(cpiRate, 0.025m),
+            _ => throw new ArgumentException($"Invalid revaluation type: {revalType}")
+        };
     }
 
     /// <summary>
@@ -51,7 +69,13 @@ public class GmpCalculator
     {
         // TODO: Get the rate, then apply compound revaluation
         // Hint: Use a for loop or Math.Pow (cast carefully with decimals)
-        throw new NotImplementedException("Exercise 6: Implement RevalueGmp");
+        //throw new NotImplementedException("Exercise 6: Implement RevalueGmp");
+        var rate = GetRevaluationRate(revalType, cpiRate);
+        for (int i = 0; i < years; i++)
+        {
+            gmpAmount *= (1 + rate);
+        }
+        return gmpAmount;
     }
 }
 

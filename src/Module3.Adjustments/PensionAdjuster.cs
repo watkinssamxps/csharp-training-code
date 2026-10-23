@@ -24,7 +24,9 @@ public class PensionAdjuster
     {
         // TODO: Get the factor from _factorTable and multiply by the pension
         // Hint: var factor = _factorTable.GetFactor(retirementAge, "Retirement");
-        throw new NotImplementedException("Exercise 3: Implement AdjustPension");
+        // throw new NotImplementedException("Exercise 3: Implement AdjustPension");
+        var factor = _factorTable.GetFactor(retirementAge, "Retirement");
+        return annualPension * factor;
     }
 
     /// <summary>
@@ -33,6 +35,13 @@ public class PensionAdjuster
     public decimal AdjustPensionSafe(decimal annualPension, int retirementAge)
     {
         // TODO: Use HasFactor to check first, return unadjusted pension if no factor exists
-        throw new NotImplementedException("Exercise 3: Implement AdjustPensionSafe");
+        // throw new NotImplementedException("Exercise 3: Implement AdjustPensionSafe");
+        if (_factorTable.HasFactor(retirementAge, "Retirement"))
+        {
+            return AdjustPension(annualPension, retirementAge); // Factor exists, apply adjustment
+        } else
+        {
+           return annualPension; // No adjustment if no factor exists
+        }
     }
 }
