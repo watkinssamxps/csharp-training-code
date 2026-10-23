@@ -17,7 +17,8 @@ public class MemberQueries
     {
         // TODO: Use .Where() to filter members by SchemeType
         // Example: _members.Where(m => m.SchemeType == schemeType).ToList()
-        throw new NotImplementedException("Exercise 1: Implement GetMembersByScheme");
+        //throw new NotImplementedException("Exercise 1: Implement GetMembersByScheme");
+        return _members.Where(m => m.SchemeType == schemeType).ToList();
     }
 
     // Exercise 2: Get active (non-deferred) members only
@@ -27,7 +28,8 @@ public class MemberQueries
     public List<Member> GetActiveMembers()
     {
         // TODO: Use .Where() to filter out deferred members
-        throw new NotImplementedException("Exercise 2: Implement GetActiveMembers");
+        //throw new NotImplementedException("Exercise 2: Implement GetActiveMembers");
+        return _members.Where(m => !m.IsDeferred).ToList();
     }
 
     // Exercise 3: Calculate total pension liability
@@ -40,7 +42,8 @@ public class MemberQueries
     {
         // TODO: Use .Sum() with a lambda that calculates each member's pension
         // Hint: You'll need a helper to get the accrual rate based on SchemeType
-        throw new NotImplementedException("Exercise 3: Implement CalculateTotalLiability");
+        //throw new NotImplementedException("Exercise 3: Implement CalculateTotalLiability");
+        return _members.Sum(m => m.Salary * m.ServiceYears * GetAccrualRate(m.SchemeType));
     }
 
     // Exercise 4: Group by scheme and get average salary
@@ -50,7 +53,10 @@ public class MemberQueries
     public Dictionary<string, decimal> GetAverageSalaryByScheme()
     {
         // TODO: Use .GroupBy() then .ToDictionary() with .Average()
-        throw new NotImplementedException("Exercise 4: Implement GetAverageSalaryByScheme");
+        //throw new NotImplementedException("Exercise 4: Implement GetAverageSalaryByScheme");
+        return _members
+            .GroupBy(m => m.SchemeType)
+            .ToDictionary(g => g.Key, g => g.Average(m => m.Salary));
     }
 
     // Exercise 5: Find members approaching retirement (within 5 years of age 65)
@@ -62,7 +68,13 @@ public class MemberQueries
     {
         // TODO: Calculate each member's age, filter those >= 60
         // Hint: Age = today.Year - dob.Year (adjust if birthday hasn't occurred yet this year)
-        throw new NotImplementedException("Exercise 5: Implement GetMembersApproachingRetirement");
+        //throw new NotImplementedException("Exercise 5: Implement GetMembersApproachingRetirement");
+        return [.. _members.Where(m =>
+        {
+            int age = today.Year - m.DateOfBirth.Year;
+            if (m.DateOfBirth > today.AddYears(-age)) age--;
+            return age >= 60;
+        })];
     }
 
     // Exercise 6: Sort by pension entitlement descending
@@ -72,7 +84,8 @@ public class MemberQueries
     public List<Member> GetMembersOrderedByPension()
     {
         // TODO: Use .OrderByDescending() with pension calculation in the lambda
-        throw new NotImplementedException("Exercise 6: Implement GetMembersOrderedByPension");
+        //throw new NotImplementedException("Exercise 6: Implement GetMembersOrderedByPension");
+        return [.. _members.OrderByDescending(m => m.Salary * m.ServiceYears * GetAccrualRate(m.SchemeType))];
     }
 
     // Exercise 7: Project to MemberSummary records
@@ -83,7 +96,24 @@ public class MemberQueries
     public List<MemberSummary> GetMemberSummaries(DateTime today)
     {
         // TODO: Use .Select() to create MemberSummary for each member
-        throw new NotImplementedException("Exercise 7: Implement GetMemberSummaries");
+        // throw new NotImplementedException("Exercise 7: Implement GetMemberSummaries");
+        
+
+        return _members.Select(m=>
+                {
+                    var age = today.Year - m.DateOfBirth.Year;
+
+                    if (today.AddYears(-age) < m.DateOfBirth)
+                    {
+                        age--;
+                    }
+
+                    return new MemberSummary(
+                        m.Name,
+                        m.Salary * m.ServiceYears * GetAccrualRate(m.SchemeType),
+                        65 - age
+                );
+            }).ToList();
     }
 
     // Helper: Get accrual rate for a scheme type (provided for you)
