@@ -21,7 +21,14 @@ public class RevaluationCalculator
         // TODO: Implement fixed rate revaluation
         // Hint: Use a for loop multiplying by (1 + fixedRate) each year
         // Or: amount * (decimal)Math.Pow((double)(1 + fixedRate), years)
-        throw new NotImplementedException("Implement FixedRateRevaluation");
+        //throw new NotImplementedException("Implement FixedRateRevaluation");
+        decimal result = amount;
+        for (int i = 0; i < years; i++)
+        {
+            result *= (1 + fixedRate);
+        }
+        return result;
+
     }
 
     /// <summary>
@@ -32,7 +39,13 @@ public class RevaluationCalculator
     public decimal CompoundRevaluation(decimal amount, decimal annualRate, int years)
     {
         // TODO: Implement compound revaluation
-        throw new NotImplementedException("Implement CompoundRevaluation");
+        //throw new NotImplementedException("Implement CompoundRevaluation");
+        decimal result = amount;
+        for (int i = 0; i < years; i++)
+        {
+            result *= (1 + annualRate);
+        }
+        return result;
     }
 
     /// <summary>
@@ -45,6 +58,13 @@ public class RevaluationCalculator
         // TODO: Loop through each year's CPI rate
         // Apply min(cpiRate, capRate) as that year's increase
         // Compound: amount = amount * (1 + min(cpi, cap))
-        throw new NotImplementedException("Implement CpiCappedRevaluation");
+        //throw new NotImplementedException("Implement CpiCappedRevaluation");
+        decimal result = amount;
+        foreach (var cpiRate in annualCpiRates)
+        {
+            var effectiveRate = Math.Min(cpiRate, capRate);
+            result *= (1 + effectiveRate);
+        }
+        return result;
     }
 }

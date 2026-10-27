@@ -31,15 +31,13 @@ public class PensionCalculator
         // TODO: Use an if/else or switch to return the correct rate
         // Hint: 1m/60m gives you a decimal result (the 'm' suffix means decimal literal)
         //throw new NotImplementedException("Exercise 2: Implement GetAccrualRate");
-         switch (basis)
+        decimal accrualRate = basis switch
         {
-            case AccrualBasis.Sixtieths:
-                return 1m / 60m;
-            case AccrualBasis.Eightieths:
-                return 1m / 80m;
-            default:
-                throw new ArgumentException("Invalid accrual basis");
-        }
+            AccrualBasis.Sixtieths => 1m / 60m,
+            AccrualBasis.Eightieths => 1m / 80m,
+            _ => throw new ArgumentException("Invalid accrual basis")
+        };
+        return accrualRate;
     }
 
     // Exercise 3: Handle part-time service

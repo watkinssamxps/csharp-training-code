@@ -14,56 +14,95 @@ namespace Module4.TDD;
 /// </summary>
 public class MessyCalculator
 {
+    public const int NormalPensionAge = 65;
+    public const decimal EarlyRetirementReductionPerYear = 0.04m;
+    public const decimal LateRetirementIncreasePerYear = 0.05m;
+    public const decimal CommutationFactorUnder60 = 18.5m;
+    public const decimal CommutationFactor60ToNormal = 16.0m;
+    public const decimal CommutationFactorOverNormal = 13.0m;
+
+
+
     // This method calculates everything in one go — it's correct but ugly
-    public decimal CalcPension(decimal sal, int yrs, string type, int age, bool wantLumpSum)
+    static public decimal  ApplyEarlyRetirementReduction(decimal pension, int age)
     {
-        decimal p = 0;
-
-        // calc basic pension
-        if (type == "60ths")
-        {
-            p = sal * yrs / 60m;
-        }
-        else if (type == "80ths")
-        {
-            p = sal * yrs / 80m;
-        }
-        else if (type == "CARE")
-        {
-            p = sal * yrs / 49m;
-        }
-
         // early retirement
-        if (age < 65)
+        if (age < NormalPensionAge)
         {
-            int e = 65 - age;
-            decimal r = 1m - (e * 0.04m);
-            if (r < 0) r = 0;
-            p = p * r;
+            int yearsEarly = NormalPensionAge - age;
+            decimal reduction = 1m - (yearsEarly * EarlyRetirementReductionPerYear);
+            if (reduction < 0) reduction = 0;
+            pension = pension * reduction;
         }
+        return pension;
+    }
+
+    static public decimal ApplyLateRetirementIncrease(decimal pension, int age)
+    {
 
         // late retirement
-        if (age > 65)
+        if (age > NormalPensionAge)
         {
-            int l = age - 65;
-            decimal b = 1m + (l * 0.05m);
-            p = p * b;
+            int yearsLate = age - NormalPensionAge;
+            decimal increase = 1m + (yearsLate * LateRetirementIncreasePerYear);
+            pension = pension * increase;
         }
+        return pension;
+    }
 
-        // commutation
+    static public decimal ApplyCommutation(decimal pension, int age, bool wantLumpSum)
+    {
+        // Commutation factor depends on age
+        decimal commFactor = age switch
+        {
+            < 60 => CommutationFactorUnder60,
+            >= 60 and <= NormalPensionAge => CommutationFactor60ToNormal,
+            > NormalPensionAge => CommutationFactorOverNormal,
+        };
+        // Commutation reduces pension by 25% and gives a lump sum of 25% × commutation factor
         if (wantLumpSum)
         {
-            decimal commFactor = 15.0m;
-            if (age < 60) commFactor = 18.5m;
-            else if (age < 65) commFactor = 16.0m;
-            else if (age > 65) commFactor = 13.0m;
-
-            decimal lumpSum = (p * 0.25m) * commFactor;
-            p = p * 0.75m;
+            decimal lumpSum = (pension * 0.25m) * commFactor;
+            pension = pension * 0.75m;
             // Note: lump sum is calculated but we only return the residual pension
             // In a real system you'd return both
         }
 
-        return Math.Round(p, 2);
+        // return the adjusted pension after commutation
+        return pension;
     }
+    public decimal CalcPension(decimal salary, int years, string type, int age, bool wantLumpSum)
+    {
+        decimal factor = type switch
+        { 
+            "60ths" => 1m / 60m,
+            "80ths" => 1m/ 80m,
+            "CARE" => 1m /49m,
+            _ => throw new ArgumentException("Unknown scheme type")
+        };
+
+        decimal pension = salary * years * factor;
+
+        //Early/late retirement adjustments
+        if (age < NormalPensionAge)
+        {
+            pension = ApplyEarlyRetirementReduction(pension, age);
+        }
+        if (age > NormalPensionAge)
+        {
+            pension = ApplyLateRetirementIncrease(pension, age);
+        }
+
+        // Commutation adjustments
+        if (wantLumpSum)
+        {
+            pension = ApplyCommutation(pension, age, wantLumpSum);
+        }
+
+        // Round to 2 decimal places for currency
+        return Math.Round(pension, 2);
+    }
+
+    
+    
 }

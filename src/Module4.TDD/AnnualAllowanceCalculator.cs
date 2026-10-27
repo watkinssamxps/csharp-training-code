@@ -34,7 +34,19 @@ public class AnnualAllowanceCalculator
         // 1. If hasMpaa, return MPAA
         // 2. If both income thresholds exceeded, calculate tapered AA
         // 3. Otherwise return standard AA
-        throw new NotImplementedException("Implement GetAnnualAllowance");
+        //throw new NotImplementedException("Implement GetAnnualAllowance");
+        if (hasMpaa)
+        {
+            return Mpaa;
+        }else if (adjustedIncome > TaperThreshold && thresholdIncome > ThresholdIncome)
+        {
+            var taperedAA = StandardAA - ((adjustedIncome - TaperThreshold) / 2);
+            return Math.Max(taperedAA, MinTaperedAA);
+        }
+        else
+        {
+            return StandardAA;
+        }
     }
 
     /// <summary>
@@ -46,7 +58,16 @@ public class AnnualAllowanceCalculator
     {
         // TODO: Calculate the excess and apply tax rate
         // Hint: If pensionInput <= annualAllowance, return 0
-        throw new NotImplementedException("Implement CalculateTaxCharge");
+        //throw new NotImplementedException("Implement CalculateTaxCharge");
+        if (pensionInput <= annualAllowance)
+        {
+            return 0m;
+        }
+        else
+        {
+            var excess = pensionInput - annualAllowance;
+            return excess * marginalTaxRate;
+        }
     }
 
     /// <summary>
@@ -57,6 +78,16 @@ public class AnnualAllowanceCalculator
     public decimal CalculateTaxChargeSafe(decimal pensionInput, decimal annualAllowance, decimal marginalTaxRate)
     {
         // TODO: Validate inputs then delegate to CalculateTaxCharge
-        throw new NotImplementedException("Implement CalculateTaxChargeSafe");
+        if (pensionInput < 0)
+        {
+            throw new ArgumentException("Pension input must be a non-negative value.", nameof(pensionInput));
+        }
+
+        if (marginalTaxRate < 0 || marginalTaxRate > 1)
+        {
+            throw new ArgumentException("Marginal tax rate must be between 0 and 1.", nameof(marginalTaxRate));
+        }
+
+        return CalculateTaxCharge(pensionInput, annualAllowance, marginalTaxRate);
     }
 }
