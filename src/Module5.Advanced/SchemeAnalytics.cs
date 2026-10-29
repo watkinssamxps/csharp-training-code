@@ -1,3 +1,7 @@
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.VisualBasic;
+
 namespace Module5.Advanced;
 
 /// <summary>
@@ -21,13 +25,21 @@ public class SchemeAnalytics
     public Dictionary<string, decimal> GetTotalLiabilityByScheme()
     {
         // TODO: Use GroupBy and ToDictionary with Sum
-        throw new NotImplementedException("Exercise 3a: Implement GetTotalLiabilityByScheme");
+       // throw new NotImplementedException("Exercise 3a: Implement GetTotalLiabilityByScheme");
+       var LiabiltyByScheme = _results
+       .GroupBy(r => r.SchemeType)
+       .ToDictionary(
+        g=> g.Key,
+        g => g.Sum(r => r.AdjustedPension)
+       );
+       return LiabiltyByScheme;
     }
 
     // Exercise 3b: Average pension by age band
     /// <summary>
     /// Groups results into age bands (55-59, 60-64, 65-69, 70+) and returns average pension per band.
     /// </summary>
+    
     public Dictionary<string, decimal> GetAveragePensionByAgeBand()
     {
         // TODO: Create age band labels, group by band, average the adjusted pension
@@ -36,7 +48,27 @@ public class SchemeAnalytics
         //   age < 65 → "60-64"
         //   age < 70 → "65-69"
         //   else → "70+"
-        throw new NotImplementedException("Exercise 3b: Implement GetAveragePensionByAgeBand");
+        //throw new NotImplementedException("Exercise 3b: Implement GetAveragePensionByAgeBand");
+
+        var AverageByAgeBand = _results
+        .Where(p => p.RetirementAge >= 55)
+        .GroupBy(p => GetAgeBand(p.RetirementAge))
+        .ToDictionary(
+            g => g.Key,
+            g => g.Average(x => x.AdjustedPension)
+        );
+
+        return AverageByAgeBand;
+    }
+        
+
+    private static string GetAgeBand(int age)
+    {
+        if (age >= 55 && age <= 59) return "55-59";
+        if (age >= 60 && age <= 64) return "60-64";
+        if (age >= 65 && age <= 69) return "65-69";
+        if (age >= 70) return "70+";
+        return "Under 55";
     }
 
     // Exercise 3c: Members with pension above threshold
@@ -46,7 +78,14 @@ public class SchemeAnalytics
     public List<string> GetHighPensionMembers(decimal threshold)
     {
         // TODO: Filter and project to names
-        throw new NotImplementedException("Exercise 3c: Implement GetHighPensionMembers");
+        //throw new NotImplementedException("Exercise 3c: Implement GetHighPensionMembers");
+
+        var HighPensionMembers = _results
+        .Where(m => m.AdjustedPension > threshold)
+        .Select(m => m.MemberName)
+        .ToList();
+
+        return HighPensionMembers;
     }
 
     // Exercise 3d: Running total using Aggregate
@@ -63,7 +102,15 @@ public class SchemeAnalytics
         //       runningTotal += r.AdjustedPension;
         //       return (r.MemberName, runningTotal);
         //   }).ToList();
-        throw new NotImplementedException("Exercise 3d: Implement GetRunningTotals");
+        //throw new NotImplementedException("Exercise 3d: Implement GetRunningTotals");
+
+        var runningTotal = 0m;
+        return _results
+        .Select(r =>
+            {
+                runningTotal += r.AdjustedPension;
+                return (r.MemberName, runningTotal);
+            }).ToList();
     }
 
     // Exercise 3e: Flatten multi-tranche pensions with SelectMany
@@ -76,7 +123,15 @@ public class SchemeAnalytics
     {
         // TODO: Use SelectMany to flatten, then GroupBy member name and sum
         // Hint: trancheResults.SelectMany(t => t).GroupBy(r => r.MemberName)...
-        throw new NotImplementedException("Exercise 3e: Implement FlattenAndSumByMember");
+        //throw new NotImplementedException("Exercise 3e: Implement FlattenAndSumByMember");
+
+        return trancheResults
+        .SelectMany(t => t)
+        .GroupBy(r => r.MemberName)
+        .ToDictionary(
+            g => g.Key,
+            g => g.Sum(r => r.AdjustedPension)
+        ); 
     }
 
     // Exercise 3f: Summary statistics
@@ -86,7 +141,46 @@ public class SchemeAnalytics
     public SchemeSummary GetSummary()
     {
         // TODO: Calculate all summary fields using LINQ
-        throw new NotImplementedException("Exercise 3f: Implement GetSummary");
+        //throw new NotImplementedException("Exercise 3f: Implement GetSummary");
+        
+        // Total Members
+        int totalMembers = _results.Count;
+
+        // Total Base Pension for Scheme
+        decimal totalBasePension = _results.Sum(r => r.BasePension);
+
+        // Total Adjusted Pension for Scheme
+        decimal totaAdjustedPension = _results.Sum(r => r.AdjustedPension);
+
+        // Total Lump Sum
+        decimal totalLumpSum = _results.Sum(r => r.LumpSum);
+
+        // Avg Pension
+        decimal averagePension = _results.Average(r => r.AdjustedPension);
+
+        // Max Pension
+        decimal highestPension = _results.Max(r => r.AdjustedPension);
+
+        // Min Pension
+        decimal lowestPension = _results.Min(r => r.AdjustedPension);
+
+        //Hightest Pension Member 
+        string highestPensionMember = _results
+        .OrderByDescending(m => m.AdjustedPension)
+        .Select(m => m.MemberName)
+        .First();
+    
+        return new SchemeSummary{
+            TotalMembers = totalMembers,
+            TotalBasePension = totalBasePension,
+            TotalAdjustedPension = totaAdjustedPension,
+            TotalLumpSums = totalLumpSum,
+            AveragePension = averagePension,
+            HighestPension = highestPension,
+            LowestPension = lowestPension,
+            HighestPensionMember = highestPensionMember
+        };
+            
     }
 }
 

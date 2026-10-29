@@ -29,6 +29,7 @@ public record CalculationResult
     public decimal ResidualPension { get; init; }
     public decimal LumpSum { get; init; }
     public decimal CommutationPercentage { get; init; }
+
 }
 
 // Provided: Scheme and Member types used by the builder

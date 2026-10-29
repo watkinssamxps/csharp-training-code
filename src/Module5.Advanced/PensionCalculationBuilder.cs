@@ -30,7 +30,9 @@ public class PensionCalculationBuilder
     {
         // TODO: Store the member and return 'this' for chaining
         // Hint: _member = member; return this;
-        throw new NotImplementedException("Exercise 1: Implement ForMember");
+        //throw new NotImplementedException("Exercise 1: Implement ForMember");
+        _member = member;
+        return this;
     }
 
     /// <summary>
@@ -39,7 +41,9 @@ public class PensionCalculationBuilder
     public PensionCalculationBuilder WithScheme(Scheme scheme)
     {
         // TODO: Store the scheme and return this
-        throw new NotImplementedException("Exercise 1: Implement WithScheme");
+        //throw new NotImplementedException("Exercise 1: Implement WithScheme");
+        _scheme = scheme;
+        return this;
     }
 
     /// <summary>
@@ -48,7 +52,9 @@ public class PensionCalculationBuilder
     public PensionCalculationBuilder AtRetirementAge(int age)
     {
         // TODO: Store the retirement age and return this
-        throw new NotImplementedException("Exercise 1: Implement AtRetirementAge");
+        //throw new NotImplementedException("Exercise 1: Implement AtRetirementAge");
+        _retirementAge = age;
+        return this;
     }
 
     /// <summary>
@@ -57,7 +63,9 @@ public class PensionCalculationBuilder
     public PensionCalculationBuilder WithCommutation(decimal percentage)
     {
         // TODO: Store the commutation percentage and return this
-        throw new NotImplementedException("Exercise 1: Implement WithCommutation");
+        //throw new NotImplementedException("Exercise 1: Implement WithCommutation");
+        _commutationPercentage = percentage;
+        return this;
     }
 
     /// <summary>
@@ -104,7 +112,68 @@ public class PensionCalculationBuilder
         // var residualPension = adjustedPension - commutedAmount;
         //
         // Step 5: Return result
-        throw new NotImplementedException("Exercise 1: Implement Build");
+        // throw new NotImplementedException("Exercise 1: Implement Build");
+
+
+        // Validation
+        if (String.IsNullOrWhiteSpace(_member?.Name))
+            throw new InvalidOperationException("Member is required");
+        if (String.IsNullOrWhiteSpace(_scheme?.Type))
+            throw new InvalidOperationException("Scheme is required"); 
+        if (_commutationPercentage < 0 || _commutationPercentage > 1)
+            throw new InvalidOperationException("Commutation percentage must be between 0 and 1");
+
+        // Get retirement age (use scheme NPA if not specified)
+
+        var retirementAge = _retirementAge ?? _scheme.NormalPensionAge;
+
+        // Calculate base pension
+
+        decimal basePension =  decimal.Round(
+            _member.Salary * _member.ServiceYears * _member.GetAccrualRate(),
+            2);
+            
+
+        // Apply early/late retirement adjustment
+
+        decimal adjustedPension = basePension;
+        if (retirementAge < _scheme.NormalPensionAge)
+        {
+            int yearsEarly = _scheme.NormalPensionAge - retirementAge;
+            adjustedPension *= (1 - yearsEarly * _scheme.EarlyRetirementReductionPerYear);
+            if (adjustedPension < 0) adjustedPension = 0;
+        }
+        else if (retirementAge > _scheme.NormalPensionAge)
+        {
+            int yearsLate = retirementAge - _scheme.NormalPensionAge;
+            adjustedPension *= (1 + yearsLate * _scheme.LateRetirementIncreasePerYear);
+        }
+
+
+        // Apply commutation if requested
+
+        decimal commutedAmount = adjustedPension * _commutationPercentage;
+        decimal lumpSum = decimal.Round(commutedAmount * _scheme.CommutationFactor, 2);
+        decimal residualPension = decimal.Round(adjustedPension - commutedAmount, 2);
+
+        // Round AdjustedPension
+
+        adjustedPension = decimal.Round(adjustedPension, 2);
+
+        // 
+
+        return new CalculationResult
+        {
+            MemberName = _member?.Name ?? string.Empty,
+            SchemeType = _scheme?.Type ?? string.Empty,
+            RetirementAge = retirementAge,
+            BasePension = basePension,
+            AdjustedPension = adjustedPension,
+            ResidualPension = residualPension,
+            LumpSum = lumpSum,
+            CommutationPercentage = _commutationPercentage
+        };
+
     }
 
     /// <summary>
